@@ -171,6 +171,21 @@ io.on('connection', socket => {
     }
   });
 
+  // Handle chat messages
+  socket.on('chat-message', (message) => {
+    const { roomId, username } = socket;
+    if (!roomId || !username || !message.trim()) return;
+
+    const messageData = {
+      sender: username,
+      message: message.trim(),
+      time: Date.now()
+    };
+
+    // Broadcast to all users in the room (including sender)
+    io.to(roomId).emit('chat-message', messageData);
+  });
+
   socket.on('disconnect', async () => {
     const { roomId, username } = socket;
     if (!roomId || !username) return;
