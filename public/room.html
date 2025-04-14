@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collab Notepad</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    #topbar {
+      height: 60px;
+      background: #2c3e50;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #main {
+      display: flex;
+      flex-grow: 1;
+      height: calc(100vh - 60px);
+    }
+
+    #sidebar {
+      width: 280px;
+      background: #fff;
+      padding: 1.5rem;
+      border-right: 1px solid #e0e0e0;
+      box-sizing: border-box;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+    }
+
+    #editor {
+      flex-grow: 1;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      background: #fff;
+    }
+
+    .CodeMirror {
+      flex: 1;
+      height: 100% !important;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 14px;
+    }
+
+    #user-list {
+      margin-top: 1rem;
+    }
+
+    .user {
+      padding: 8px 10px;
+      margin-bottom: 5px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .user i {
+      margin-right: 8px;
+      color: #3498db;
+    }
+
+    #file-tools {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .room-type {
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    .CodeMirror-scroll {
+      height: 100% !important;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: #e9ecef;
+      border-color: #ced4da;
+    }
+
+    .btn i {
+      margin-right: 6px;
+    }
+
+    .btn-primary {
+      background-color: #3498db;
+      border-color: #2980b9;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #2980b9;
+      border-color: #2573a7;
+    }
+
+    .btn-success {
+      background-color: #2ecc71;
+      border-color: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #27ae60;
+      border-color: #219653;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .section {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .info-item {
+      display: flex;
+      margin-bottom: 8px;
+    }
+
+    .info-item strong {
+      min-width: 80px;
+      color: #555;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #2c3e50;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 1.5rem;
+    }
+
+    .language-selector {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .language-selector label {
+      margin-right: 10px;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .language-selector select {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2c3e50;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 1001;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="topbar">
+    <div><strong><i class="fas fa-edit"></i> Collab Notepad</strong></div>
+    <div class="room-type" id="room-type"></div>
+  </div>
+  <div id="main">
+    <div id="sidebar">
+      <div class="section">
+        <h3><i class="fas fa-info-circle"></i> Room Info</h3>
+        <div class="info-item">
+          <strong>Name:</strong> <span id="room-name-display"></span>
+        </div>
+        <div class="info-item">
+          <strong>Room ID:</strong> <span id="room-id"></span>
+        </div>
+        <div class="info-item">
+          <strong>Owner:</strong> <span id="room-owner-display"></span>
+        </div>
+        <div class="info-item">
+          <strong>Your Name:</strong> <span id="username-display"></span>
+        </div>
+        <div class="info-item">
+          <strong>File:</strong> <span id="current-file-display">untitled.txt</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><i class="fas fa-file-alt"></i> File Tools</h3>
+        <div id="file-tools">
+          <input type="file" id="fileInput">
+          <label for="fileInput" id="fileInputLabel" class="btn"><i class="fas fa-upload"></i> Upload File</label>
+          <button id="newFileBtn" class="btn btn-primary"><i class="fas fa-plus"></i> New File</button>
+          <button id="downloadBtn" class="btn btn-success"><i class="fas fa-download"></i> Download</button>
+        </div>
+
+        <div class="language-selector">
+          <label for="language-select">Syntax:</label>
+          <select id="language-select">
+            <option value="text">Plain Text</option>
+            <option value="javascript">JavaScript</option>
+            <option value="htmlmixed">HTML</option>
+            <option value="css">CSS</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="clike">C/C++</option>
+            <option value="php">PHP</option>
+            <option value="sql">SQL</option>
+            <option value="xml">XML</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3><i class="fas fa-users"></i> Users in Room</h3>
+        <div id="user-list"></div>
+      </div>
+    </div>
+    <div id="editor"></div>
+  </div>
+
+  <!-- New File Modal -->
+  <div id="newFileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create New File</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newFileName">File Name:</label>
+          <input type="text" id="newFileName" class="form-control" placeholder="Enter file name">
+        </div>
+        <div class="form-group">
+          <label for="newFileExt">File Extension:</label>
+          <select id="newFileExt" class="form-control">
+            <option value=".txt">.txt (Text File)</option>
+            <option value=".js">.js (JavaScript)</option>
+            <option value=".html">.html (HTML)</option>
+            <option value=".css">.css (CSS)</option>
+            <option value=".py">.py (Python)</option>
+            <option value=".java">.java (Java)</option>
+            <option value=".cpp">.cpp (C++)</option>
+            <option value=".c">.c (C)</option>
+            <option value=".php">.php (PHP)</option>
+            <option value=".sql">.sql (SQL)</option>
+            <option value=".xml">.xml (XML)</option>
+            <option value=".json">.json (JSON)</option>
+            <option value=".md">.md (Markdown)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelNewFile" class="btn">Cancel</button>
+        <button id="createNewFile" class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/php/php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script>
+    // Toast notification function
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), duration);
+    }
+
+    // Get room ID from URL
+    const roomId = window.location.pathname.split('/').pop();
+    let socket;
+    let username;
+    let currentFileName = 'untitled.txt';
+
+    // New File Creation
+    document.getElementById('newFileBtn').addEventListener('click', () => {
+      document.getElementById('newFileModal').style.display = 'flex';
+    });
+
+    document.getElementById('cancelNewFile').addEventListener('click', () => {
+      document.getElementById('newFileModal').style.display = 'none';
+    });
+
+    document.getElementById('createNewFile').addEventListener('click', () => {
+      try {
+        const fileName = document.getElementById('newFileName').value.trim();
+        const fileExt = document.getElementById('newFileExt').value;
+
+        if (!fileName) {
+          showToast('Please enter a file name');
+          return;
+        }
+
+        currentFileName = fileName + fileExt;
+        editor.setValue('');
+        document.getElementById('current-file-display').textContent = currentFileName;
+        updateSyntaxHighlighting(currentFileName);
+        socket.emit('code-change', '');
+        socket.emit('filename-change', currentFileName);
+        document.getElementById('newFileModal').style.display = 'none';
+        document.getElementById('newFileName').value = '';
+        showToast('New file created');
+      } catch (error) {
+        console.error('New file creation error:', error);
+        showToast('Failed to create new file');
+      }
+    });
+
+    // Initialize application
+    function initApp() {
+      // Validate room ID format
+      if (!/^\d{6}$/.test(roomId)) {
+        showToast('Invalid room ID format');
+        setTimeout(() => window.location.href = '/', 2000);
+        return;
+      }
+
+      // Get or prompt for username
+      username = localStorage.getItem(`room-${roomId}-username`) || 
+                localStorage.getItem('username') || 
+                prompt("Enter your name:");
+
+      if (!username) {
+        showToast('Name is required');
+        setTimeout(() => window.location.href = '/', 2000);
+        return;
+      }
+
+      document.getElementById('username-display').textContent = username;
+
+      // Get room password
+      const password = localStorage.getItem(`room-${roomId}-password`);
+      if (!password) {
+        const enteredPassword = prompt("Enter room password:") || "";
+        if (!enteredPassword) {
+          showToast('Password is required');
+          setTimeout(() => window.location.href = '/', 2000);
+          return;
+        }
+        localStorage.setItem(`room-${roomId}-password`, enteredPassword);
+      }
+
+      connectToRoom();
+    }
+
+    // Connect to room with Socket.IO
+    // Initialize CodeMirror editor
+    let editor;
+    
+    function connectToRoom() {
+      const password = localStorage.getItem(`room-${roomId}-password`);
+      const roomName = localStorage.getItem(`room-${roomId}-name`);
+    
+      socket = io();
+      
+      // Join room with credentials
+      socket.emit('join-room', roomId, username, password, true, roomName);
+    
+      // Initialize CodeMirror editor
+      editor = CodeMirror(document.getElementById('editor'), {
+        lineNumbers: true,
+        mode: 'javascript',
+        theme: 'default',
+        indentUnit: 2,
+        smartIndent: true,
+        tabSize: 2,
+        indentWithTabs: false,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        extraKeys: {
+          "Ctrl-S": saveFile,
+          "Cmd-S": saveFile
+        }
+      });
+    
+      let isUpdating = false;
+    
+      // Handle code changes
+      editor.on('change', () => {
+        if (isUpdating) return;
+        const code = editor.getValue();
+        socket.emit('code-change', code);
+      });
+    
+      // Update code when received from server
+      socket.on('code-update', (code) => {
+        isUpdating = true;
+        editor.setValue(code);
+        isUpdating = false;
+      });
+    
+      // Handle room info updates
+      socket.on('room-info', (info) => {
+        document.getElementById('room-name-display').textContent = info.roomName || 'Unknown';
+        document.getElementById('room-owner-display').textContent = info.owner || 'Unknown';
+        document.getElementById('room-id').textContent = info.roomId || 'Unknown';
+        document.getElementById('room-type').textContent = info.roomName || 'Collaborative Room';
+      });
+    
+      // Handle room access denied
+      socket.on('room-denied', (message) => {
+        showToast(message || "Access denied");
+        localStorage.removeItem(`room-${roomId}-password`);
+        localStorage.removeItem(`room-${roomId}-name`);
+        setTimeout(() => window.location.href = "/", 2000);
+      });
+    
+      // Update user list
+      socket.on('user-list', (users) => {
+        const list = document.getElementById('user-list');
+        list.innerHTML = '';
+        users.forEach(user => {
+          const div = document.createElement('div');
+          div.className = 'user';
+          div.innerHTML = `<i class="fas fa-user"></i> ${user}`;
+          list.appendChild(div);
+        });
+      });
+    
+      // Handle user join notifications
+      socket.on('user-joined', (user) => {
+        showToast(`${user} joined the room`);
+      });
+    
+      // Handle user leave notifications
+      socket.on('user-left', (user) => {
+        showToast(`${user} left the room`);
+      });
+    
+      // Update filename when received
+      socket.on('filename-update', (newFileName) => {
+        currentFileName = newFileName;
+        document.getElementById('current-file-display').textContent = newFileName;
+        updateSyntaxHighlighting(newFileName);
+      });
+    
+      // Update syntax highlighting when received
+      socket.on('syntax-update', (syntaxType) => {
+        document.getElementById('language-select').value = syntaxType;
+        editor.setOption('mode', syntaxType);
+      });
+    
+      // Handle filename requests
+      socket.on('request-filename', () => {
+        socket.emit('filename-change', currentFileName);
+      });
+    
+      // Handle syntax requests
+      socket.on('request-syntax', () => {
+        const currentSyntax = document.getElementById('language-select').value;
+        socket.emit('syntax-change', currentSyntax);
+      });
+    }
+
+    // Update syntax highlighting based on file extension
+    function updateSyntaxHighlighting(fileName) {
+      const extension = fileName.split('.').pop().toLowerCase();
+      let mode = 'text';
+
+      const modeMap = {
+        'js': 'javascript',
+        'html': 'htmlmixed',
+        'htm': 'htmlmixed',
+        'css': 'css',
+        'py': 'python',
+        'java': 'clike',
+        'c': 'clike',
+        'cpp': 'clike',
+        'h': 'clike',
+        'php': 'php',
+        'sql': 'sql',
+        'xml': 'xml',
+        'json': 'javascript',
+        'md': 'text',
+        'txt': 'text'
+      };
+
+      if (modeMap[extension]) {
+        mode = modeMap[extension];
+        document.getElementById('language-select').value = mode;
+      } else {
+        document.getElementById('language-select').value = 'text';
+      }
+
+      editor.setOption('mode', mode);
+      socket.emit('syntax-change', mode);
+    }
+
+    // Save file handler
+    function saveFile() {
+      try {
+        const content = editor.getValue();
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentFileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('File downloaded successfully');
+      } catch (error) {
+        console.error('Download error:', error);
+        showToast('Failed to download file');
+      }
+    }
+
+    // Language selector change handler
+    document.getElementById('language-select').addEventListener('change', (e) => {
+      const mode = e.target.value;
+      editor.setOption('mode', mode);
+      socket.emit('syntax-change', mode);
+    });
+
+    // File Upload
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+      try {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (file.size > 1024 * 1024) { // 1MB limit
+          showToast('File too large (max 1MB)');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target.result;
+            editor.setValue(content);
+            currentFileName = file.name;
+            document.getElementById('current-file-display').textContent = currentFileName;
+            updateSyntaxHighlighting(currentFileName);
+            socket.emit('code-change', content);
+            socket.emit('filename-change', currentFileName);
+            showToast('File imported successfully');
+          } catch (error) {
+            console.error('File processing error:', error);
+            showToast('Failed to process file');
+          }
+        };
+        reader.onerror = () => {
+          showToast('Failed to read file');
+        };
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('File upload error:', error);
+        showToast('Failed to upload file');
+      }
+    });
+
+    // New File Modal
+    const newFileModal = document.getElementById('newFileModal');
+    const newFileBtn = document.getElementById('newFileBtn');
+    const cancelNewFile = document.getElementById('cancelNewFile');
+    const createNewFile = document.getElementById('createNewFile');
+    const newFileName = document.getElementById('newFileName');
+    const newFileExt = document.getElementById('newFileExt');
+
+    newFileExt.addEventListener('change', (e) => {
+      const extension = e.target.value.substring(1);
+      const modeMap = {
+        'js': 'javascript',
+        'html': 'htmlmixed',
+        'css': 'css',
+        'py': 'python',
+        'java': 'clike',
+        'c': 'clike',
+        'cpp': 'clike',
+        'php': 'php',
+        'sql': 'sql',
+        'xml': 'xml',
+        'json': 'javascript',
+        'md': 'text',
+        'txt': 'text'
+      };
+
+      if (modeMap[extension]) {
+        document.getElementById('language-select').value = modeMap[extension];
+      } else {
+        document.getElementById('language-select').value = 'text';
+      }
+    });
+
+    newFileBtn.addEventListener('click', () => {
+      newFileName.value = '';
+      newFileExt.value = '.txt';
+      newFileModal.style.display = 'flex';
+    });
+
+    cancelNewFile.addEventListener('click', () => {
+      newFileModal.style.display = 'none';
+    });
+
+    createNewFile.addEventListener('click', () => {
+      const fileName = newFileName.value.trim();
+      const fileExt = newFileExt.value;
+
+      if (!fileName) {
+        showToast('Please enter a file name');
+        return;
+      }
+
+      currentFileName = fileName + fileExt;
+      document.getElementById('current-file-display').textContent = currentFileName;
+      editor.setValue('');
+      updateSyntaxHighlighting(currentFileName);
+      const syntaxMode = document.getElementById('language-select').value;
+      socket.emit('filename-change', currentFileName);
+      socket.emit('syntax-change', syntaxMode);
+      newFileModal.style.display = 'none';
+      showToast('New file created');
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === newFileModal) {
+        newFileModal.style.display = 'none';
+      }
+    });
+
+    // Download button handler
+    document.getElementById('downloadBtn').addEventListener('click', saveFile);
+
+    // Initialize the application
+    initApp();
+  </script>
+</body>
+</html>

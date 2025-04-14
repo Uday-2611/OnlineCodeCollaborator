@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Collab Notepad - Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: #333;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      padding: 2rem;
+      box-sizing: border-box;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .card {
+      padding: 2.5rem;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .card-header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .card-header h2 {
+      font-size: 1.8rem;
+      color: #2c3e50;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-header h2 i {
+      margin-right: 10px;
+      color: #3498db;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+
+    .form-control:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn i {
+      margin-right: 8px;
+    }
+
+    .input-group {
+      display: flex;
+      position: relative;
+    }
+
+    .btn-addon {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      padding: 0 12px;
+      background: transparent;
+      border: none;
+      color: #7f8c8d;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .btn-addon:hover {
+      color: #3498db;
+    }
+
+    .form-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.85rem;
+      color: #7f8c8d;
+    }
+
+    .form-check {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .form-check-input {
+      position: absolute;
+      left: 0;
+      top: 0.25rem;
+      margin-top: 0;
+    }
+
+    .form-check-label {
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+
+    .form-actions {
+      margin-top: 2rem;
+    }
+
+    .room-link {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      border: 1px dashed #ddd;
+    }
+
+    .room-link input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 5px;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .room-link button {
+      background: transparent;
+      border: none;
+      color: #3498db;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    .room-link button:hover {
+      color: #2980b9;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+
+    .feature {
+      flex: 1;
+      min-width: 250px;
+      max-width: 350px;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+
+    .feature i {
+      font-size: 2.5rem;
+      color: #3498db;
+      margin-bottom: 1rem;
+    }
+
+    .feature h3 {
+      font-size: 1.3rem;
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature p {
+      color: #7f8c8d;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .feature {
+        min-width: 100%;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #333;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 200px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .action-btn i {
+      font-size: 2.5rem;
+      color: #3498db;
+      margin-bottom: 1rem;
+    }
+
+    .action-btn h3 {
+      margin: 0;
+      color: #2c3e50;
+    }
+
+    .action-btn p {
+      margin: 0.5rem 0 0;
+      color: #7f8c8d;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-edit"></i> Realtime Notepad</h1>
+      <p>Collaborate in real-time with others on text documents, code, and more.</p>
+    </div>
+
+    <div class="features">
+      <div class="feature">
+        <i class="fas fa-sync-alt"></i>
+        <h3>Real-time Collaboration</h3>
+        <p>Work together with others in real-time, seeing changes as they happen.</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-code"></i>
+        <h3>Code Highlighting</h3>
+        <p>Syntax highlighting for multiple programming languages.</p>
+      </div>
+      <div class="feature">
+        <i class="fas fa-lock"></i>
+        <h3>Private Rooms</h3>
+        <p>Create password-protected rooms for secure collaboration.</p>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="/create-room" class="action-btn">
+        <i class="fas fa-plus-circle"></i>
+        <h3>Create Room</h3>
+        <p>Start a new collaborative room</p>
+      </a>
+      <a href="/join-room" class="action-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        <h3>Join Room</h3>
+        <p>Enter an existing room</p>
+      </a>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2023 Realtime Notepad. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
