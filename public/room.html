@@ -556,6 +556,9 @@
       // Join room with credentials
       socket.emit('join-room', roomId, username, password, true, roomName);
     
+      // Request current syntax
+      socket.emit('request-syntax');
+    
       // Initialize CodeMirror editor
       editor = CodeMirror(document.getElementById('editor'), {
         lineNumbers: true,

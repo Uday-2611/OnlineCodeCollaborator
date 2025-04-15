@@ -197,6 +197,40 @@ io.on('connection', socket => {
     }
   });
 
+  // Handle syntax changes
+  socket.on('syntax-change', async (syntaxType) => {
+    const { roomId } = socket;
+    if (!roomId) return;
+
+    try {
+      // Update syntax in database
+      await Room.findOneAndUpdate({ roomId }, { 
+        syntaxType,
+        lastActive: new Date()
+      });
+
+      // Broadcast to other users in room
+      socket.to(roomId).emit('syntax-update', syntaxType);
+    } catch (error) {
+      console.error('Syntax update error:', error);
+    }
+  });
+
+  // Handle syntax requests
+  socket.on('request-syntax', async () => {
+    const { roomId } = socket;
+    if (!roomId) return;
+
+    try {
+      const room = await Room.findOne({ roomId });
+      if (room) {
+        socket.emit('syntax-update', room.syntaxType);
+      }
+    } catch (error) {
+      console.error('Syntax request error:', error);
+    }
+  });
+
   // Handle chat messages
   socket.on('chat-message', (message) => {
     const { roomId, username } = socket;
