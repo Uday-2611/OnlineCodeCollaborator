@@ -4,8 +4,22 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const Room = require('./models/Room');
+
+// Helper function for password hashing
+const hashPassword = (password) => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
+};
+
+// Helper function for password verification
+const verifyPassword = (password, hashedPassword) => {
+  const [salt, storedHash] = hashedPassword.split(':');
+  const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+  return storedHash === hash;
+};
 
 const app = express();
 const server = http.createServer(app);
@@ -51,7 +65,7 @@ app.post('/api/rooms', async (req, res) => {
     }
 
     // Generate hashed password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = hashPassword(password);
     
     // Create new room with server-generated ID
     const room = new Room({
@@ -125,8 +139,7 @@ io.on('connection', socket => {
       }
   
       // Verify password
-      const isMatch = await bcrypt.compare(password, room.password);
-      if (!isMatch) {
+      if (!verifyPassword(password, room.password)) {
         throw new Error('Incorrect password');
       }
 
