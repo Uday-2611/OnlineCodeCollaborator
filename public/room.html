@@ -835,10 +835,10 @@
       const fileName = newFileName.value.trim();
       const fileExt = newFileExt.value;
 
-      if (!fileName) {
-        showToast('Please enter a file name');
-        return;
-      }
+      // if (!fileName) {
+      //   showToast('Please enter a file name');
+      //   return;
+      // }
 
       currentFileName = fileName + fileExt;
       document.getElementById('current-file-display').textContent = currentFileName;
