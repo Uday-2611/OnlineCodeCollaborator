@@ -486,10 +486,10 @@
         const fileName = document.getElementById('newFileName').value.trim();
         const fileExt = document.getElementById('newFileExt').value;
 
-        if (!fileName) {
-          showToast('Please enter a file name');
-          return;
-        }
+        // if (!fileName) {
+        //  showToast('Please enter a file name');
+        //  return;
+        //} 
 
         currentFileName = fileName + fileExt;
         editor.setValue('');
