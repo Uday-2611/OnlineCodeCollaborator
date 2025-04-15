@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -14,14 +15,26 @@ const io = new Server(server, {
   cookie: false
 });
 
-// Connect to MongoDB
-mongoose.connect('mongodb://127.0.0.1:27017/realtime-notepad')
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
-  });
+// Connect to MongoDB Atlas
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI is not defined in .env file');
+  process.exit(1);
+}
+
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  retryWrites: true,
+  w: 'majority'
+})
+.then(() => {
+  console.log('✅ Connected to MongoDB Atlas');
+})
+.catch((err) => {
+  console.error('❌ MongoDB Atlas connection error:', err);
+  process.exit(1); // Exit if unable to connect to database
+});
 
 // Middleware
 app.use(express.json());
