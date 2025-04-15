@@ -231,6 +231,40 @@ io.on('connection', socket => {
     }
   });
 
+  // Handle filename changes
+  socket.on('filename-change', async (filename) => {
+    const { roomId } = socket;
+    if (!roomId) return;
+
+    try {
+      // Update filename in database
+      await Room.findOneAndUpdate({ roomId }, { 
+        fileName: filename,
+        lastActive: new Date()
+      });
+
+      // Broadcast to other users in room
+      socket.to(roomId).emit('filename-update', filename);
+    } catch (error) {
+      console.error('Filename update error:', error);
+    }
+  });
+
+  // Handle filename requests
+  socket.on('request-filename', async () => {
+    const { roomId } = socket;
+    if (!roomId) return;
+
+    try {
+      const room = await Room.findOne({ roomId });
+      if (room) {
+        socket.emit('filename-update', room.fileName);
+      }
+    } catch (error) {
+      console.error('Filename request error:', error);
+    }
+  });
+
   // Handle chat messages
   socket.on('chat-message', (message) => {
     const { roomId, username } = socket;
